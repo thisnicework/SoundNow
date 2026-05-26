@@ -1,0 +1,1606 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sound Installation Control Center</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0A0D16;
+            --card-bg: rgba(16, 22, 37, 0.65);
+            --card-border: rgba(255, 255, 255, 0.08);
+            --card-hover-border: rgba(255, 255, 255, 0.15);
+            --text-main: #F3F4F6;
+            --text-muted: #9CA3AF;
+            --primary: #6366F1;
+            --primary-glow: rgba(99, 102, 241, 0.4);
+            --success: #10B981;
+            --success-glow: rgba(16, 185, 129, 0.3);
+            --warning: #F59E0B;
+            --danger: #EF4444;
+            --danger-glow: rgba(239, 68, 68, 0.3);
+            --info: #06B6D4;
+            --font-main: 'Inter', sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            background-image: 
+                radial-gradient(at 10% 20%, rgba(99, 102, 241, 0.1) 0px, transparent 50%),
+                radial-gradient(at 90% 80%, rgba(6, 182, 212, 0.08) 0px, transparent 50%);
+            color: var(--text-main);
+            font-family: var(--font-main);
+            min-height: 100vh;
+            padding: 2rem;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        /* Header Style */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .brand-section h1 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            letter-spacing: -0.025em;
+            background: linear-gradient(135deg, #FFF 30%, #A5B4FC 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-transform: uppercase;
+        }
+
+        .brand-section p {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            margin-top: 0.25rem;
+        }
+
+        .global-stats {
+            display: flex;
+            gap: 1.5rem;
+        }
+
+        .stat-badge {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            padding: 0.75rem 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            backdrop-filter: blur(12px);
+        }
+
+        .stat-badge .stat-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .stat-badge .stat-val {
+            font-size: 1.125rem;
+            font-weight: 600;
+            font-family: var(--font-mono);
+        }
+
+        .stat-badge .stat-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: var(--success);
+            box-shadow: 0 0 10px var(--success);
+        }
+
+        /* Spatial Map Panel */
+        .spatial-panel {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 20px;
+            padding: 1.75rem;
+            backdrop-filter: blur(16px);
+            display: flex;
+            gap: 1.75rem;
+            flex-wrap: wrap;
+        }
+
+        .spatial-map-container {
+            flex: 2;
+            min-width: 350px;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .spatial-canvas-wrapper {
+            position: relative;
+            background: rgba(7, 10, 19, 0.7);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 14px;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #spatial-canvas {
+            display: block;
+        }
+
+        .spatial-sidebar {
+            flex: 1;
+            min-width: 280px;
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+            background: rgba(255, 255, 255, 0.01);
+            padding: 1.25rem;
+            border-radius: 14px;
+            border: 1px solid rgba(255, 255, 255, 0.03);
+        }
+
+        .spatial-title {
+            font-size: 0.95rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+            color: #A5B4FC;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .spatial-desc {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            line-height: 1.45;
+        }
+
+        .spatial-vector-info {
+            display: flex;
+            flex-direction: column;
+            gap: 0.45rem;
+            background: rgba(255, 255, 255, 0.02);
+            padding: 0.75rem 1rem;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.03);
+            font-size: 0.8rem;
+        }
+
+        .vector-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .vector-val {
+            font-family: var(--font-mono);
+            color: var(--info);
+            font-weight: 600;
+        }
+
+        /* Modules Grid */
+        .modules-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .module-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 20px;
+            padding: 1.75rem;
+            backdrop-filter: blur(16px);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .module-card:hover {
+            border-color: var(--card-hover-border);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .module-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--info));
+            opacity: 0.7;
+        }
+
+        .module-card.online::before {
+            background: linear-gradient(90deg, var(--success), var(--info));
+        }
+
+        .module-card.offline::before {
+            background: linear-gradient(90deg, var(--danger), var(--warning));
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .card-title-area h2 {
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        .voice-tag {
+            font-size: 0.75rem;
+            color: var(--info);
+            background: rgba(6, 182, 212, 0.1);
+            border: 1px solid rgba(6, 182, 212, 0.2);
+            padding: 0.25rem 0.625rem;
+            border-radius: 20px;
+            font-weight: 500;
+            margin-top: 0.25rem;
+            display: inline-block;
+        }
+
+        .badges-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .badge {
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            padding: 0.35rem 0.75rem;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+        }
+
+        .badge-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+        }
+
+        /* Badge themes */
+        .badge-success {
+            background: rgba(16, 185, 129, 0.12);
+            color: #34D399;
+            border: 1px solid rgba(16, 185, 129, 0.2);
+        }
+        .badge-success .badge-dot { background: var(--success); box-shadow: 0 0 6px var(--success); }
+
+        .badge-danger {
+            background: rgba(239, 68, 68, 0.12);
+            color: #F87171;
+            border: 1px solid rgba(239, 68, 68, 0.2);
+        }
+        .badge-danger .badge-dot { background: var(--danger); box-shadow: 0 0 6px var(--danger); }
+
+        .badge-warning {
+            background: rgba(245, 158, 11, 0.12);
+            color: #FBBF24;
+            border: 1px solid rgba(245, 158, 11, 0.2);
+        }
+        .badge-warning .badge-dot { background: var(--warning); box-shadow: 0 0 6px var(--warning); }
+
+        .badge-info {
+            background: rgba(99, 102, 241, 0.12);
+            color: #A5B4FC;
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            animation: pulse-glow 2s infinite ease-in-out;
+        }
+        .badge-info .badge-dot { background: var(--primary); box-shadow: 0 0 6px var(--primary); }
+
+        .badge-muted {
+            background: rgba(156, 163, 175, 0.1);
+            color: #D1D5DB;
+            border: 1px solid rgba(156, 163, 175, 0.15);
+        }
+        .badge-muted .badge-dot { background: var(--text-muted); }
+
+        @keyframes pulse-glow {
+            0%, 100% { opacity: 0.8; }
+            50% { opacity: 1; filter: brightness(1.2); }
+        }
+
+        /* Metric & Circular gauge */
+        .metric-section {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(255, 255, 255, 0.02);
+            padding: 1rem;
+            border-radius: 14px;
+            border: 1px solid rgba(255, 255, 255, 0.03);
+        }
+
+        .metric-info {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .metric-label {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .metric-state-desc {
+            font-size: 0.95rem;
+            font-weight: 500;
+        }
+
+        .gauge-container {
+            position: relative;
+            width: 72px;
+            height: 72px;
+        }
+
+        .gauge-svg {
+            transform: rotate(-90deg);
+            width: 100%;
+            height: 100%;
+        }
+
+        .gauge-bg {
+            fill: none;
+            stroke: rgba(255, 255, 255, 0.05);
+            stroke-width: 6;
+        }
+
+        .gauge-progress {
+            fill: none;
+            stroke: var(--primary);
+            stroke-width: 6;
+            stroke-linecap: round;
+            stroke-dasharray: 201; /* 2 * pi * 32 */
+            stroke-dashoffset: 201;
+            transition: stroke-dashoffset 0.8s ease;
+        }
+
+        .gauge-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        /* Configurations */
+        .config-form {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            background: rgba(255, 255, 255, 0.01);
+            padding: 1rem;
+            border-radius: 14px;
+            border: 1px solid rgba(255, 255, 255, 0.02);
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.35rem;
+        }
+
+        .input-row {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .input-group label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .custom-input {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            color: var(--text-main);
+            padding: 0.5rem 0.75rem;
+            font-size: 0.875rem;
+            font-family: var(--font-mono);
+            flex-grow: 1;
+            transition: all 0.2s;
+        }
+
+        .custom-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: rgba(255, 255, 255, 0.06);
+            box-shadow: 0 0 0 2px var(--primary-glow);
+        }
+
+        .save-btn {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text-main);
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .save-btn:hover {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: rgba(255, 255, 255, 0.25);
+        }
+
+        /* Controls Section */
+        .controls-row {
+            display: flex;
+            gap: 0.75rem;
+            margin-top: auto;
+        }
+
+        .control-btn {
+            flex: 1;
+            border-radius: 12px;
+            padding: 0.875rem 1rem;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            border: none;
+        }
+
+        .btn-play {
+            background-color: var(--success);
+            color: #052E16;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+        }
+
+        .btn-play:hover:not(:disabled) {
+            transform: translateY(-1px);
+            background-color: #34D399;
+            box-shadow: 0 6px 16px rgba(16, 185, 129, 0.4);
+        }
+
+        .btn-stop {
+            background-color: var(--danger);
+            color: #450A0A;
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
+        }
+
+        .btn-stop:hover:not(:disabled) {
+            transform: translateY(-1px);
+            background-color: #F87171;
+            box-shadow: 0 6px 16px rgba(239, 68, 68, 0.4);
+        }
+
+        .control-btn:disabled {
+            opacity: 0.35;
+            cursor: not-allowed;
+            transform: none !important;
+            box-shadow: none !important;
+        }
+
+        /* Console Section */
+        .console-panel {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 20px;
+            backdrop-filter: blur(16px);
+            display: flex;
+            flex-direction: column;
+            height: 380px;
+            overflow: hidden;
+        }
+
+        .console-header {
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .console-title-area {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .console-title {
+            font-size: 0.95rem;
+            font-weight: 600;
+            letter-spacing: 0.03em;
+            text-transform: uppercase;
+        }
+
+        .console-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: var(--primary);
+            box-shadow: 0 0 8px var(--primary);
+            animation: pulse-glow 1.5s infinite ease-in-out;
+        }
+
+        .console-terminal {
+            flex-grow: 1;
+            background: rgba(7, 10, 19, 0.8);
+            padding: 1.25rem 1.5rem;
+            overflow-y: auto;
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            line-height: 1.5;
+            display: flex;
+            flex-direction: column;
+            gap: 0.35rem;
+        }
+
+        .console-line {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            animation: fadeIn 0.15s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(2px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .line-time {
+            color: #4B5563;
+            flex-shrink: 0;
+        }
+
+        .line-module {
+            color: #818CF8;
+            font-weight: 500;
+            flex-shrink: 0;
+            min-width: 65px;
+        }
+
+        .line-tag {
+            padding: 0.05rem 0.35rem;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            flex-shrink: 0;
+        }
+
+        .tag-sys { background: rgba(59, 130, 246, 0.15); color: #60A5FA; border: 1px solid rgba(59, 130, 246, 0.2); }
+        .tag-stt { background: rgba(16, 185, 129, 0.15); color: #34D399; border: 1px solid rgba(16, 185, 129, 0.2); }
+        .tag-llm { background: rgba(245, 158, 11, 0.15); color: #FBBF24; border: 1px solid rgba(245, 158, 11, 0.2); }
+        .tag-tts { background: rgba(236, 72, 153, 0.15); color: #F472B6; border: 1px solid rgba(236, 72, 153, 0.2); }
+
+        .line-msg {
+            color: #E5E7EB;
+            word-break: break-all;
+        }
+
+        /* Toast notifications */
+        .toast-container {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            z-index: 1000;
+        }
+
+        .toast {
+            background: rgba(17, 24, 39, 0.95);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-left: 4px solid var(--primary);
+            padding: 1rem 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1.5rem;
+            min-width: 300px;
+            backdrop-filter: blur(8px);
+            animation: slideIn 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        .toast.success { border-left-color: var(--success); }
+        .toast.danger { border-left-color: var(--danger); }
+        .toast.warning { border-left-color: var(--warning); }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header>
+            <div class="brand-section">
+                <h1>Sound Installation Control Center</h1>
+                <p>3-모듈 왜곡 사운드 인스톨레이션 관리 시스템</p>
+            </div>
+            <div class="global-stats">
+                <div class="stat-badge">
+                    <div class="stat-indicator"></div>
+                    <div>
+                        <div class="stat-label">서버 상태</div>
+                        <div class="stat-val" id="server-status-val">READY</div>
+                    </div>
+                </div>
+                <div class="stat-badge">
+                    <div>
+                        <div class="stat-label">처리기 큐</div>
+                        <div class="stat-val" id="queue-size-val">0</div>
+                    </div>
+                </div>
+                <div class="stat-badge">
+                    <div>
+                        <div class="stat-label">서버 CPU</div>
+                        <div class="stat-val" id="server-cpu-val">0.0%</div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Spatial Canvas Map Section (전역 공간 지도) -->
+        <section class="spatial-panel">
+            <div class="spatial-map-container">
+                <div class="spatial-title">
+                    <div class="console-dot" style="background-color: var(--info); box-shadow: 0 0 8px var(--info);"></div>
+                    <span>Spatial Audio Map (실시간 공간 소리 지향 지도)</span>
+                </div>
+                <div class="spatial-canvas-wrapper">
+                    <canvas id="spatial-canvas" width="650" height="280"></canvas>
+                </div>
+            </div>
+            <div class="spatial-sidebar">
+                <div class="spatial-title">Rotation Mode Config</div>
+                <p class="spatial-desc">기입하신 세 모듈의 공간 기하학적 좌표에 기반하여, 지향 화살표(회전 벡터)를 자동으로 계산하는 모드입니다.</p>
+                
+                <div class="config-form" style="background: none; border: none; padding: 0.5rem 0 0 0;">
+                    <div class="input-group" style="gap: 0.65rem;">
+                        <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; padding: 0.25rem 0;">
+                            <input type="radio" name="rot-mode" value="loop" checked onchange="changeRotationMode('loop')" style="accent-color: var(--primary); transform: scale(1.15);">
+                            <span style="font-size: 0.85rem; font-weight: 500;">순차 순환 지향 (Sequential Loop)</span>
+                        </label>
+                        <p class="spatial-desc" style="font-size: 0.72rem; padding-left: 1.5rem; margin-top: -0.25rem; color: #8A909D;">모듈 1➔2, 모듈 2➔3, 모듈 3➔1 방향으로 조준하여 회전형 루프 빔을 만듭니다.</p>
+                        
+                        <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; padding: 0.25rem 0; margin-top: 0.5rem;">
+                            <input type="radio" name="rot-mode" value="center" onchange="changeRotationMode('center')" style="accent-color: var(--primary); transform: scale(1.15);">
+                            <span style="font-size: 0.85rem; font-weight: 500;">중앙 수렴 지향 (Centroid Convergence)</span>
+                        </label>
+                        <p class="spatial-desc" style="font-size: 0.72rem; padding-left: 1.5rem; margin-top: -0.25rem; color: #8A909D;">3개 좌표의 기하학적 무게중심을 자동으로 구해 중앙으로 스피커를 집중 조준합니다.</p>
+                    </div>
+                </div>
+
+                <!-- 모듈 위치 좌표 일괄 기입 패널 -->
+                <div style="border-top: 1px solid rgba(255, 255, 255, 0.08); padding-top: 1.25rem; margin-top: 0.75rem;">
+                    <div class="spatial-title" style="margin-bottom: 0.75rem; color: #FBBF24; display: flex; align-items: center; gap: 0.4rem;">
+                        <span style="font-size: 1.1rem;">📍</span>
+                        <span style="text-shadow: 0 0 10px rgba(250, 204, 21, 0.2);">실시간 모듈 좌표 기입 (m)</span>
+                    </div>
+                    <p class="spatial-desc" style="font-size: 0.75rem; margin-bottom: 0.75rem; color: #9CA3AF;">
+                        지도의 격자(Grid) 상에서 각 스피커 모듈의 물리적 위치(x, y)를 직접 입력하세요. 입력 즉시 지도와 조준각이 실시간 계산됩니다.
+                    </p>
+                    <div class="config-form" style="background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(251, 191, 36, 0.2); padding: 0.85rem; gap: 0.85rem; border-radius: 12px; box-shadow: inset 0 0 12px rgba(0,0,0,0.2);">
+                        <!-- 모듈 1 -->
+                        <div class="input-row" style="align-items: center; justify-content: space-between; gap: 0.5rem;">
+                            <span style="font-size: 0.85rem; font-weight: 600; width: 65px; color: #A5B4FC; display: flex; align-items: center; gap: 0.25rem;">
+                                <span style="color: var(--success);">●</span> 모듈 1:
+                            </span>
+                            <div class="input-group" style="flex: 1; flex-direction: row; align-items: center; gap: 0.25rem;">
+                                <span style="font-size: 0.75rem; color: var(--text-muted); font-family: var(--font-mono);">X:</span>
+                                <input type="number" step="0.1" class="custom-input" id="map-x-1" value="-2.0" style="padding: 0.35rem 0.5rem; text-align: center; border-color: rgba(255, 255, 255, 0.15);" onchange="saveMapCoords(1)">
+                            </div>
+                            <div class="input-group" style="flex: 1; flex-direction: row; align-items: center; gap: 0.25rem;">
+                                <span style="font-size: 0.75rem; color: var(--text-muted); font-family: var(--font-mono);">Y:</span>
+                                <input type="number" step="0.1" class="custom-input" id="map-y-1" value="2.0" style="padding: 0.35rem 0.5rem; text-align: center; border-color: rgba(255, 255, 255, 0.15);" onchange="saveMapCoords(1)">
+                            </div>
+                        </div>
+                        <!-- 모듈 2 -->
+                        <div class="input-row" style="align-items: center; justify-content: space-between; gap: 0.5rem;">
+                            <span style="font-size: 0.85rem; font-weight: 600; width: 65px; color: #A5B4FC; display: flex; align-items: center; gap: 0.25rem;">
+                                <span style="color: var(--success);">●</span> 모듈 2:
+                            </span>
+                            <div class="input-group" style="flex: 1; flex-direction: row; align-items: center; gap: 0.25rem;">
+                                <span style="font-size: 0.75rem; color: var(--text-muted); font-family: var(--font-mono);">X:</span>
+                                <input type="number" step="0.1" class="custom-input" id="map-x-2" value="2.0" style="padding: 0.35rem 0.5rem; text-align: center; border-color: rgba(255, 255, 255, 0.15);" onchange="saveMapCoords(2)">
+                            </div>
+                            <div class="input-group" style="flex: 1; flex-direction: row; align-items: center; gap: 0.25rem;">
+                                <span style="font-size: 0.75rem; color: var(--text-muted); font-family: var(--font-mono);">Y:</span>
+                                <input type="number" step="0.1" class="custom-input" id="map-y-2" value="2.0" style="padding: 0.35rem 0.5rem; text-align: center; border-color: rgba(255, 255, 255, 0.15);" onchange="saveMapCoords(2)">
+                            </div>
+                        </div>
+                        <!-- 모듈 3 -->
+                        <div class="input-row" style="align-items: center; justify-content: space-between; gap: 0.5rem;">
+                            <span style="font-size: 0.85rem; font-weight: 600; width: 65px; color: #A5B4FC; display: flex; align-items: center; gap: 0.25rem;">
+                                <span style="color: var(--success);">●</span> 모듈 3:
+                            </span>
+                            <div class="input-group" style="flex: 1; flex-direction: row; align-items: center; gap: 0.25rem;">
+                                <span style="font-size: 0.75rem; color: var(--text-muted); font-family: var(--font-mono);">X:</span>
+                                <input type="number" step="0.1" class="custom-input" id="map-x-3" value="0.0" style="padding: 0.35rem 0.5rem; text-align: center; border-color: rgba(255, 255, 255, 0.15);" onchange="saveMapCoords(3)">
+                            </div>
+                            <div class="input-group" style="flex: 1; flex-direction: row; align-items: center; gap: 0.25rem;">
+                                <span style="font-size: 0.75rem; color: var(--text-muted); font-family: var(--font-mono);">Y:</span>
+                                <input type="number" step="0.1" class="custom-input" id="map-y-3" value="-2.0" style="padding: 0.35rem 0.5rem; text-align: center; border-color: rgba(255, 255, 255, 0.15);" onchange="saveMapCoords(3)">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="margin-top: auto; border-top: 1px solid rgba(255, 255, 255, 0.05); padding-top: 0.75rem;">
+                    <p class="spatial-desc" style="font-size: 0.75rem;">- 그린 노드 <span style="color: var(--success)">●</span>: 모듈 (M1, M2, M3)<br>- 블루 노드 <span style="color: var(--info)">●</span>: 연산 중심 지점 (Centroid)<br>- 그린 화살표 <span style="color: var(--success)">➔</span>: 스피커 출력 지향 벡터</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Modules Grid -->
+        <main class="modules-grid">
+            <!-- Module 1 -->
+            <section class="module-card" id="module-card-1">
+                <div class="card-header">
+                    <div class="card-title-area">
+                        <h2 id="module-title-1">모듈 1</h2>
+                        <span class="voice-tag" id="module-voice-1">sohee voice</span>
+                    </div>
+                    <div class="badges-container">
+                        <span class="badge badge-muted" id="tcp-badge-1"><div class="badge-dot"></div>TCP</span>
+                        <span class="badge badge-muted" id="agent-badge-1"><div class="badge-dot"></div>AGENT</span>
+                    </div>
+                </div>
+
+                <div class="metric-section">
+                    <div class="metric-info">
+                        <span class="metric-label">현재 음성 감지 상태</span>
+                        <span class="metric-state-desc" id="vad-desc-1">대기 중</span>
+                    </div>
+                    <div class="gauge-container">
+                        <svg class="gauge-svg">
+                            <circle class="gauge-bg" cx="36" cy="36" r="32"></circle>
+                            <circle class="gauge-progress" cx="36" cy="36" r="32" id="cpu-ring-1"></circle>
+                        </svg>
+                        <div class="gauge-text" id="cpu-text-1">0%</div>
+                    </div>
+                </div>
+
+                <!-- Rotation Vector Real-time Indicators -->
+                <div class="spatial-vector-info">
+                    <div class="vector-row">
+                        <span>현재 물리 좌표 (Pos)</span>
+                        <span class="vector-val" id="spatial-pos-1">(-2.0, 2.0) m</span>
+                    </div>
+                    <div class="vector-row">
+                        <span>단위 회전 벡터 (Rot Vec)</span>
+                        <span class="vector-val" id="spatial-vec-1">(0.7071, -0.7071)</span>
+                    </div>
+                    <div class="vector-row">
+                        <span>출력 조준각 (Angle)</span>
+                        <span class="vector-val" id="spatial-ang-1">-45.0°</span>
+                    </div>
+                    <div class="vector-row">
+                        <span>조준 상대거리 (Dist)</span>
+                        <span class="vector-val" id="spatial-dst-1">2.8 m</span>
+                    </div>
+                </div>
+
+                <div class="config-form">
+                    <div class="input-row">
+                        <div class="input-group" style="flex: 1.5;">
+                            <label for="module-ip-1">IP 주소 (로컬: 127.0.0.1)</label>
+                            <input type="text" class="custom-input" id="module-ip-1" value="127.0.0.1">
+                        </div>
+                        <div class="input-group" style="flex: 1.2;">
+                            <label for="module-name-1">모듈 이름</label>
+                            <input type="text" class="custom-input" id="module-name-1" value="모듈 1">
+                        </div>
+                    </div>
+                    <div class="input-row" style="background: rgba(255, 255, 255, 0.02); padding: 0.5rem; border-radius: 8px; border: 1px solid rgba(251, 191, 36, 0.15); margin-top: 0.25rem;">
+                        <div class="input-group" style="flex: 1.2;">
+                            <label for="module-voice-sel-1">음성 모델</label>
+                            <input type="text" class="custom-input" id="module-voice-sel-1" value="sohee" style="padding: 0.35rem 0.5rem;">
+                        </div>
+                        <div class="input-group" style="flex: 0.9;">
+                            <label for="module-x-1" style="color: #FBBF24; font-weight: 600;">📍 좌표 X (m)</label>
+                            <input type="number" step="0.1" class="custom-input" id="module-x-1" value="-2.0" style="padding: 0.35rem 0.5rem; border-color: rgba(251, 191, 36, 0.3); text-align: center;" onchange="syncToMapCoords(1)">
+                        </div>
+                        <div class="input-group" style="flex: 0.9;">
+                            <label for="module-y-1" style="color: #FBBF24; font-weight: 600;">📍 좌표 Y (m)</label>
+                            <input type="number" step="0.1" class="custom-input" id="module-y-1" value="2.0" style="padding: 0.35rem 0.5rem; border-color: rgba(251, 191, 36, 0.3); text-align: center;" onchange="syncToMapCoords(1)">
+                        </div>
+                        <button class="save-btn" onclick="saveConfiguration(1)" style="align-self: flex-end; height: 32px; background: rgba(251, 191, 36, 0.1); border-color: rgba(251, 191, 36, 0.3); color: #FBBF24;">저장</button>
+                    </div>
+                </div>
+
+                <div class="controls-row">
+                    <button class="control-btn btn-play" id="btn-play-1" onclick="controlModule(1, 'start')">
+                        ▶ 재생
+                    </button>
+                    <button class="control-btn btn-stop" id="btn-stop-1" onclick="controlModule(1, 'stop')">
+                        ⏹ 정지
+                    </button>
+                </div>
+            </section>
+
+            <!-- Module 2 -->
+            <section class="module-card" id="module-card-2">
+                <div class="card-header">
+                    <div class="card-title-area">
+                        <h2 id="module-title-2">모듈 2</h2>
+                        <span class="voice-tag" id="module-voice-2">sohee voice</span>
+                    </div>
+                    <div class="badges-container">
+                        <span class="badge badge-muted" id="tcp-badge-2"><div class="badge-dot"></div>TCP</span>
+                        <span class="badge badge-muted" id="agent-badge-2"><div class="badge-dot"></div>AGENT</span>
+                    </div>
+                </div>
+
+                <div class="metric-section">
+                    <div class="metric-info">
+                        <span class="metric-label">현재 음성 감지 상태</span>
+                        <span class="metric-state-desc" id="vad-desc-2">대기 중</span>
+                    </div>
+                    <div class="gauge-container">
+                        <svg class="gauge-svg">
+                            <circle class="gauge-bg" cx="36" cy="36" r="32"></circle>
+                            <circle class="gauge-progress" cx="36" cy="36" r="32" id="cpu-ring-2"></circle>
+                        </svg>
+                        <div class="gauge-text" id="cpu-text-2">0%</div>
+                    </div>
+                </div>
+
+                <!-- Rotation Vector Real-time Indicators -->
+                <div class="spatial-vector-info">
+                    <div class="vector-row">
+                        <span>현재 물리 좌표 (Pos)</span>
+                        <span class="vector-val" id="spatial-pos-2">(2.0, 2.0) m</span>
+                    </div>
+                    <div class="vector-row">
+                        <span>단위 회전 벡터 (Rot Vec)</span>
+                        <span class="vector-val" id="spatial-vec-2">(-0.7071, -0.7071)</span>
+                    </div>
+                    <div class="vector-row">
+                        <span>출력 조준각 (Angle)</span>
+                        <span class="vector-val" id="spatial-ang-2">-135.0°</span>
+                    </div>
+                    <div class="vector-row">
+                        <span>조준 상대거리 (Dist)</span>
+                        <span class="vector-val" id="spatial-dst-2">2.8 m</span>
+                    </div>
+                </div>
+
+                <div class="config-form">
+                    <div class="input-row">
+                        <div class="input-group" style="flex: 1.5;">
+                            <label for="module-ip-2">IP 주소 (로컬: 127.0.0.1)</label>
+                            <input type="text" class="custom-input" id="module-ip-2" value="127.0.0.1">
+                        </div>
+                        <div class="input-group" style="flex: 1.2;">
+                            <label for="module-name-2">모듈 이름</label>
+                            <input type="text" class="custom-input" id="module-name-2" value="모듈 2">
+                        </div>
+                    </div>
+                    <div class="input-row" style="background: rgba(255, 255, 255, 0.02); padding: 0.5rem; border-radius: 8px; border: 1px solid rgba(251, 191, 36, 0.15); margin-top: 0.25rem;">
+                        <div class="input-group" style="flex: 1.2;">
+                            <label for="module-voice-sel-2">음성 모델</label>
+                            <input type="text" class="custom-input" id="module-voice-sel-2" value="sohee" style="padding: 0.35rem 0.5rem;">
+                        </div>
+                        <div class="input-group" style="flex: 0.9;">
+                            <label for="module-x-2" style="color: #FBBF24; font-weight: 600;">📍 좌표 X (m)</label>
+                            <input type="number" step="0.1" class="custom-input" id="module-x-2" value="2.0" style="padding: 0.35rem 0.5rem; border-color: rgba(251, 191, 36, 0.3); text-align: center;" onchange="syncToMapCoords(2)">
+                        </div>
+                        <div class="input-group" style="flex: 0.9;">
+                            <label for="module-y-2" style="color: #FBBF24; font-weight: 600;">📍 좌표 Y (m)</label>
+                            <input type="number" step="0.1" class="custom-input" id="module-y-2" value="2.0" style="padding: 0.35rem 0.5rem; border-color: rgba(251, 191, 36, 0.3); text-align: center;" onchange="syncToMapCoords(2)">
+                        </div>
+                        <button class="save-btn" onclick="saveConfiguration(2)" style="align-self: flex-end; height: 32px; background: rgba(251, 191, 36, 0.1); border-color: rgba(251, 191, 36, 0.3); color: #FBBF24;">저장</button>
+                    </div>
+                </div>
+
+                <div class="controls-row">
+                    <button class="control-btn btn-play" id="btn-play-2" onclick="controlModule(2, 'start')">
+                        ▶ 재생
+                    </button>
+                    <button class="control-btn btn-stop" id="btn-stop-2" onclick="controlModule(2, 'stop')">
+                        ⏹ 정지
+                    </button>
+                </div>
+            </section>
+
+            <!-- Module 3 -->
+            <section class="module-card" id="module-card-3">
+                <div class="card-header">
+                    <div class="card-title-area">
+                        <h2 id="module-title-3">모듈 3</h2>
+                        <span class="voice-tag" id="module-voice-3">sohee voice</span>
+                    </div>
+                    <div class="badges-container">
+                        <span class="badge badge-muted" id="tcp-badge-3"><div class="badge-dot"></div>TCP</span>
+                        <span class="badge badge-muted" id="agent-badge-3"><div class="badge-dot"></div>AGENT</span>
+                    </div>
+                </div>
+
+                <div class="metric-section">
+                    <div class="metric-info">
+                        <span class="metric-label">현재 음성 감지 상태</span>
+                        <span class="metric-state-desc" id="vad-desc-3">대기 중</span>
+                    </div>
+                    <div class="gauge-container">
+                        <svg class="gauge-svg">
+                            <circle class="gauge-bg" cx="36" cy="36" r="32"></circle>
+                            <circle class="gauge-progress" cx="36" cy="36" r="32" id="cpu-ring-3"></circle>
+                        </svg>
+                        <div class="gauge-text" id="cpu-text-3">0%</div>
+                    </div>
+                </div>
+
+                <!-- Rotation Vector Real-time Indicators -->
+                <div class="spatial-vector-info">
+                    <div class="vector-row">
+                        <span>현재 물리 좌표 (Pos)</span>
+                        <span class="vector-val" id="spatial-pos-3">(0.0, -2.0) m</span>
+                    </div>
+                    <div class="vector-row">
+                        <span>단위 회전 벡터 (Rot Vec)</span>
+                        <span class="vector-val" id="spatial-vec-3">(0.0000, 1.0000)</span>
+                    </div>
+                    <div class="vector-row">
+                        <span>출력 조준각 (Angle)</span>
+                        <span class="vector-val" id="spatial-ang-3">90.0°</span>
+                    </div>
+                    <div class="vector-row">
+                        <span>조준 상대거리 (Dist)</span>
+                        <span class="vector-val" id="spatial-dst-3">2.0 m</span>
+                    </div>
+                </div>
+
+                <div class="config-form">
+                    <div class="input-row">
+                        <div class="input-group" style="flex: 1.5;">
+                            <label for="module-ip-3">IP 주소 (로컬: 127.0.0.1)</label>
+                            <input type="text" class="custom-input" id="module-ip-3" value="127.0.0.1">
+                        </div>
+                        <div class="input-group" style="flex: 1.2;">
+                            <label for="module-name-3">모듈 이름</label>
+                            <input type="text" class="custom-input" id="module-name-3" value="모듈 3">
+                        </div>
+                    </div>
+                    <div class="input-row" style="background: rgba(255, 255, 255, 0.02); padding: 0.5rem; border-radius: 8px; border: 1px solid rgba(251, 191, 36, 0.15); margin-top: 0.25rem;">
+                        <div class="input-group" style="flex: 1.2;">
+                            <label for="module-voice-sel-3">음성 모델</label>
+                            <input type="text" class="custom-input" id="module-voice-sel-3" value="sohee" style="padding: 0.35rem 0.5rem;">
+                        </div>
+                        <div class="input-group" style="flex: 0.9;">
+                            <label for="module-x-3" style="color: #FBBF24; font-weight: 600;">📍 좌표 X (m)</label>
+                            <input type="number" step="0.1" class="custom-input" id="module-x-3" value="0.0" style="padding: 0.35rem 0.5rem; border-color: rgba(251, 191, 36, 0.3); text-align: center;" onchange="syncToMapCoords(3)">
+                        </div>
+                        <div class="input-group" style="flex: 0.9;">
+                            <label for="module-y-3" style="color: #FBBF24; font-weight: 600;">📍 좌표 Y (m)</label>
+                            <input type="number" step="0.1" class="custom-input" id="module-y-3" value="-2.0" style="padding: 0.35rem 0.5rem; border-color: rgba(251, 191, 36, 0.3); text-align: center;" onchange="syncToMapCoords(3)">
+                        </div>
+                        <button class="save-btn" onclick="saveConfiguration(3)" style="align-self: flex-end; height: 32px; background: rgba(251, 191, 36, 0.1); border-color: rgba(251, 191, 36, 0.3); color: #FBBF24;">저장</button>
+                    </div>
+                </div>
+
+                <div class="controls-row">
+                    <button class="control-btn btn-play" id="btn-play-3" onclick="controlModule(3, 'start')">
+                        ▶ 재생
+                    </button>
+                    <button class="control-btn btn-stop" id="btn-stop-3" onclick="controlModule(3, 'stop')">
+                        ⏹ 정지
+                    </button>
+                </div>
+            </section>
+        </main>
+
+        <!-- System Activity Console Log -->
+        <footer class="console-panel">
+            <div class="console-header">
+                <div class="console-title-area">
+                    <div class="console-dot"></div>
+                    <span class="console-title">Live System Activity Logs</span>
+                </div>
+            </div>
+            <div class="console-terminal" id="console-terminal-body">
+                <div class="console-line">
+                    <span class="line-time">15:50:00</span>
+                    <span class="line-module">System</span>
+                    <span class="line-tag tag-sys">SYS</span>
+                    <span class="line-msg">콘솔 로그 리스너 시작됨. 실시간 처리를 모니터링합니다.</span>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Toast Notifications Container -->
+    <div class="toast-container" id="toast-area"></div>
+
+    <script>
+        // Constants & state
+        const API_URL = window.location.origin;
+        let lastLogs = [];
+        
+        // Spatial Audio Target & Modules Data
+        let spatialData = {
+            rotation_mode: 'loop',
+            centroid: { x: 0.0, y: 0.0 },
+            modules: {}
+        };
+
+        // Add a notification toast
+        function showToast(message, type = 'info') {
+            const toastArea = document.getElementById('toast-area');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            
+            toast.innerHTML = `
+                <span class="toast-msg">${message}</span>
+                <button class="toast-close" onclick="this.parentElement.remove()">×</button>
+            `;
+            
+            toastArea.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateX(100%)';
+                toast.style.transition = 'all 0.3s ease';
+                setTimeout(() => toast.remove(), 300);
+            }, 4000);
+        }
+
+        // Helper to update circle SVG ring
+        function updateCpuRing(moduleId, val) {
+            const ring = document.getElementById(`cpu-ring-${moduleId}`);
+            const text = document.getElementById(`cpu-text-${moduleId}`);
+            if (!ring || !text) return;
+            
+            const radius = 32;
+            const circumference = 2 * Math.PI * radius;
+            
+            const offset = circumference - (Math.min(100, Math.max(0, val)) / 100) * circumference;
+            ring.style.strokeDashoffset = offset;
+            text.innerText = `${val.toFixed(1)}%`;
+            
+            if (val > 60) {
+                ring.style.stroke = 'var(--danger)';
+            } else if (val > 25) {
+                ring.style.stroke = 'var(--warning)';
+            } else {
+                ring.style.stroke = 'var(--success)';
+            }
+        }
+
+        // 2D Spatial Map Canvas Drawing
+        function drawSpatialMap() {
+            const canvas = document.getElementById('spatial-canvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const w = canvas.width;
+            const h = canvas.height;
+            
+            ctx.clearRect(0, 0, w, h);
+            
+            const scale = 45; // 1m = 45px
+            const cx = w / 2;
+            const cy = h / 2;
+            
+            // 1) Draw Grid
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.03)';
+            ctx.lineWidth = 1;
+            for (let x = -8; x <= 8; x++) {
+                ctx.beginPath();
+                ctx.moveTo(cx + x * scale, 0);
+                ctx.lineTo(cx + x * scale, h);
+                ctx.stroke();
+            }
+            for (let y = -4; y <= 4; y++) {
+                ctx.beginPath();
+                ctx.moveTo(0, cy - y * scale);
+                ctx.lineTo(w, cy - y * scale);
+                ctx.stroke();
+            }
+            
+            // 2) Draw Center Axes
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.12)';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(0, cy); ctx.lineTo(w, cy);
+            ctx.moveTo(cx, 0); ctx.lineTo(cx, h);
+            ctx.stroke();
+            
+            // Axes Labels
+            ctx.fillStyle = '#6B7280';
+            ctx.font = '9px monospace';
+            ctx.fillText('+X (m)', w - 40, cy - 8);
+            ctx.fillText('+Y (m)', cx + 8, 15);
+            
+            const mode = spatialData.rotation_mode || 'loop';
+            
+            // 3) Draw Paths & Vectors
+            if (mode === 'loop') {
+                for (let mid = 1; mid <= 3; mid++) {
+                    const m = spatialData.modules[mid.toString()];
+                    if (!m) continue;
+                    
+                    const nextMid = mid === 3 ? 1 : mid + 1;
+                    const nextM = spatialData.modules[nextMid.toString()];
+                    if (!nextM) continue;
+                    
+                    const canvasMx = cx + m.x * scale;
+                    const canvasMy = cy - m.y * scale;
+                    const canvasNextX = cx + nextM.x * scale;
+                    const canvasNextY = cy - nextM.y * scale;
+                    
+                    // Dotted connection line to next module
+                    ctx.strokeStyle = 'rgba(99, 102, 241, 0.2)';
+                    ctx.lineWidth = 1;
+                    ctx.setLineDash([4, 4]);
+                    ctx.beginPath();
+                    ctx.moveTo(canvasMx, canvasMy);
+                    ctx.lineTo(canvasNextX, canvasNextY);
+                    ctx.stroke();
+                    ctx.setLineDash([]);
+                    
+                    // Direction Arrow (Unit Vector)
+                    if (m.rotation_vector) {
+                        const vx = m.rotation_vector[0];
+                        const vy = m.rotation_vector[1];
+                        const arrowLen = 35;
+                        const arrowEndX = canvasMx + vx * arrowLen;
+                        const arrowEndY = canvasMy - vy * arrowLen;
+                        
+                        ctx.strokeStyle = '#10B981';
+                        ctx.lineWidth = 2.5;
+                        ctx.beginPath();
+                        ctx.moveTo(canvasMx, canvasMy);
+                        ctx.lineTo(arrowEndX, arrowEndY);
+                        ctx.stroke();
+                        
+                        const angle = Math.atan2(vy, vx);
+                        ctx.fillStyle = '#10B981';
+                        ctx.beginPath();
+                        ctx.moveTo(arrowEndX, arrowEndY);
+                        ctx.lineTo(arrowEndX - 7 * Math.cos(angle - Math.PI/6), arrowEndY + 7 * Math.sin(angle - Math.PI/6));
+                        ctx.lineTo(arrowEndX - 7 * Math.cos(angle + Math.PI/6), arrowEndY + 7 * Math.sin(angle + Math.PI/6));
+                        ctx.fill();
+                    }
+                }
+            } else {
+                const cc = spatialData.centroid || {x: 0, y: 0};
+                const canvasCcX = cx + cc.x * scale;
+                const canvasCcY = cy - cc.y * scale;
+                
+                // Centroid Glowing blue marker
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = '#3B82F6';
+                ctx.fillStyle = '#3B82F6';
+                ctx.beginPath();
+                ctx.arc(canvasCcX, canvasCcY, 6, 0, 2 * Math.PI);
+                ctx.fill();
+                ctx.shadowBlur = 0;
+                
+                ctx.fillStyle = '#60A5FA';
+                ctx.font = 'bold 9px sans-serif';
+                ctx.fillText(`Center (${cc.x.toFixed(1)}, ${cc.y.toFixed(1)})`, canvasCcX + 10, canvasCcY + 3);
+                
+                for (let mid = 1; mid <= 3; mid++) {
+                    const m = spatialData.modules[mid.toString()];
+                    if (!m) continue;
+                    
+                    const canvasMx = cx + m.x * scale;
+                    const canvasMy = cy - m.y * scale;
+                    
+                    // Dotted line to center
+                    ctx.strokeStyle = 'rgba(99, 102, 241, 0.2)';
+                    ctx.lineWidth = 1;
+                    ctx.setLineDash([4, 4]);
+                    ctx.beginPath();
+                    ctx.moveTo(canvasMx, canvasMy);
+                    ctx.lineTo(canvasCcX, canvasCcY);
+                    ctx.stroke();
+                    ctx.setLineDash([]);
+                    
+                    // Direction Arrow
+                    if (m.rotation_vector) {
+                        const vx = m.rotation_vector[0];
+                        const vy = m.rotation_vector[1];
+                        const arrowLen = 35;
+                        const arrowEndX = canvasMx + vx * arrowLen;
+                        const arrowEndY = canvasMy - vy * arrowLen;
+                        
+                        ctx.strokeStyle = '#10B981';
+                        ctx.lineWidth = 2.5;
+                        ctx.beginPath();
+                        ctx.moveTo(canvasMx, canvasMy);
+                        ctx.lineTo(arrowEndX, arrowEndY);
+                        ctx.stroke();
+                        
+                        const angle = Math.atan2(vy, vx);
+                        ctx.fillStyle = '#10B981';
+                        ctx.beginPath();
+                        ctx.moveTo(arrowEndX, arrowEndY);
+                        ctx.lineTo(arrowEndX - 7 * Math.cos(angle - Math.PI/6), arrowEndY + 7 * Math.sin(angle - Math.PI/6));
+                        ctx.lineTo(arrowEndX - 7 * Math.cos(angle + Math.PI/6), arrowEndY + 7 * Math.sin(angle + Math.PI/6));
+                        ctx.fill();
+                    }
+                }
+            }
+            
+            // 4) Draw Module Nodes
+            for (let mid = 1; mid <= 3; mid++) {
+                const m = spatialData.modules[mid.toString()];
+                if (!m) continue;
+                
+                const canvasMx = cx + m.x * scale;
+                const canvasMy = cy - m.y * scale;
+                
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = m.tcp_connected ? '#10B981' : '#6B7280';
+                ctx.fillStyle = m.tcp_connected ? '#10B981' : '#4B5563';
+                ctx.beginPath();
+                ctx.arc(canvasMx, canvasMy, 7, 0, 2 * Math.PI);
+                ctx.fill();
+                ctx.shadowBlur = 0;
+                
+                ctx.fillStyle = '#E5E7EB';
+                ctx.font = 'bold 9px sans-serif';
+                ctx.fillText(`M${mid}: ${m.name}`, canvasMx + 10, canvasMy + 3);
+            }
+        }
+
+        // Save IP / Voice / X / Y configurations
+        async function saveConfiguration(moduleId) {
+            const ip = document.getElementById(`module-ip-${moduleId}`).value.trim();
+            const name = document.getElementById(`module-name-${moduleId}`).value.trim();
+            const voice = document.getElementById(`module-voice-sel-${moduleId}`).value.trim();
+            const x = parseFloat(document.getElementById(`module-x-${moduleId}`).value || 0.0);
+            const y = parseFloat(document.getElementById(`module-y-${moduleId}`).value || 0.0);
+
+            if (!ip) {
+                showToast("IP 주소를 올바르게 입력해주세요.", "warning");
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/api/module/configure`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        module_id: moduleId.toString(),
+                        ip: ip,
+                        name: name,
+                        voice: voice,
+                        x: x,
+                        y: y
+                    })
+                });
+                
+                const data = await response.json();
+                if (data.ok) {
+                    showToast(`${name} 설정이 성공적으로 저장되었습니다.`, 'success');
+                } else {
+                    showToast(`설정 저장 실패: ${data.message}`, 'danger');
+                }
+            } catch (err) {
+                showToast(`서버 통신 실패: ${err.message}`, 'danger');
+            }
+        }
+
+        // Save coordinates directly from Sidebar Map Fields
+        async function saveMapCoords(moduleId) {
+            const x = parseFloat(document.getElementById(`map-x-${moduleId}`).value || 0.0);
+            const y = parseFloat(document.getElementById(`map-y-${moduleId}`).value || 0.0);
+            
+            const ip = document.getElementById(`module-ip-${moduleId}`).value;
+            const name = document.getElementById(`module-name-${moduleId}`).value;
+            const voice = document.getElementById(`module-voice-sel-${moduleId}`).value;
+            
+            // Sync immediately to the module card field
+            document.getElementById(`module-x-${moduleId}`).value = x;
+            document.getElementById(`module-y-${moduleId}`).value = y;
+            
+            try {
+                const response = await fetch(`${API_URL}/api/module/configure`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        module_id: moduleId.toString(),
+                        ip: ip,
+                        name: name,
+                        voice: voice,
+                        x: x,
+                        y: y
+                    })
+                });
+                const data = await response.json();
+                if (data.ok) {
+                    showToast(`모듈 ${moduleId} 좌표가 저장되었습니다.`, 'success');
+                } else {
+                    showToast(`좌표 저장 실패: ${data.message}`, 'danger');
+                }
+            } catch (err) {
+                showToast(`서버 통신 실패: ${err.message}`, 'danger');
+            }
+        }
+
+        // Sync module card changes back to Sidebar Map Fields
+        function syncToMapCoords(moduleId) {
+            const x = parseFloat(document.getElementById(`module-x-${moduleId}`).value || 0.0);
+            const y = parseFloat(document.getElementById(`module-y-${moduleId}`).value || 0.0);
+            document.getElementById(`map-x-${moduleId}`).value = x;
+            document.getElementById(`map-y-${moduleId}`).value = y;
+        }
+
+        // Spatial rotation calculation mode save
+        async function changeRotationMode(mode) {
+            try {
+                const response = await fetch(`${API_URL}/api/rotation/mode`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ mode: mode })
+                });
+                const data = await response.json();
+                if (data.ok) {
+                    showToast(`연산 모드가 ${mode === 'loop' ? '순차 순환' : '중앙 수렴'}으로 변경되었습니다.`, 'success');
+                } else {
+                    showToast(`모드 설정 실패: ${data.message}`, 'danger');
+                }
+            } catch (err) {
+                showToast(`서버 통신 실패: ${err.message}`, 'danger');
+            }
+        }
+
+        // Play or Stop controls
+        async function controlModule(moduleId, action) {
+            const playBtn = document.getElementById(`btn-play-${moduleId}`);
+            const stopBtn = document.getElementById(`btn-stop-${moduleId}`);
+            
+            playBtn.disabled = true;
+            stopBtn.disabled = true;
+
+            const name = document.getElementById(`module-name-${moduleId}`).value;
+            const actionText = action === 'start' ? '재생 명령 전송 중...' : '정지 명령 전송 중...';
+            showToast(`${name}: ${actionText}`, 'info');
+
+            try {
+                const response = await fetch(`${API_URL}/api/module/control`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        module_id: moduleId,
+                        action: action
+                    })
+                });
+                
+                const data = await response.json();
+                if (data.ok) {
+                    const resultText = action === 'start' ? '성공적으로 시작되었습니다.' : '정지되었습니다.';
+                    showToast(`${name}: ${resultText}`, 'success');
+                } else {
+                    showToast(`${name} 제어 실패: ${data.message}`, 'danger');
+                }
+            } catch (err) {
+                showToast(`통신 오류: ${err.message}`, 'danger');
+            } finally {
+                playBtn.disabled = false;
+                stopBtn.disabled = false;
+            }
+        }
+
+        // Main poller
+        async function pollStatus() {
+            try {
+                const response = await fetch(`${API_URL}/api/status`);
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                
+                const data = await response.json();
+                
+                // 1) Server global stats
+                document.getElementById('server-status-val').innerText = data.server_status ? data.server_status.toUpperCase() : 'UNKNOWN';
+                document.getElementById('queue-size-val').innerText = data.queue_size !== undefined ? data.queue_size : '0';
+                document.getElementById('server-cpu-val').innerText = data.server_cpu !== undefined ? `${data.server_cpu.toFixed(1)}%` : '0.0%';
+                
+                // 2) Update rotation mode radio
+                const modeRadio = document.querySelector(`input[name="rot-mode"][value="${data.rotation_mode}"]`);
+                if (modeRadio && document.activeElement !== modeRadio) {
+                    modeRadio.checked = true;
+                }
+                spatialData.rotation_mode = data.rotation_mode;
+                spatialData.centroid = data.centroid;
+
+                // 3) Update individual modules
+                for (let mid = 1; mid <= 3; mid++) {
+                    const mInfo = data.modules[mid.toString()];
+                    if (!mInfo) continue;
+                    
+                    spatialData.modules[mid.toString()] = mInfo;
+
+                    const card = document.getElementById(`module-card-${mid}`);
+                    if (mInfo.agent_status === 'running') {
+                        card.className = 'module-card online';
+                    } else if (mInfo.agent_status === 'stopped') {
+                        card.className = 'module-card';
+                    } else {
+                        card.className = 'module-card offline';
+                    }
+
+                    document.getElementById(`module-title-${mid}`).innerText = mInfo.name || `모듈 ${mid}`;
+                    document.getElementById(`module-voice-${mid}`).innerText = `${mInfo.voice || 'sohee'} voice`;
+
+                    // Updates form values ONLY if not focused
+                    const ipInput = document.getElementById(`module-ip-${mid}`);
+                    if (document.activeElement !== ipInput) ipInput.value = mInfo.ip || '127.0.0.1';
+                    
+                    const nameInput = document.getElementById(`module-name-${mid}`);
+                    if (document.activeElement !== nameInput) nameInput.value = mInfo.name || `모듈 ${mid}`;
+                    
+                    const voiceInput = document.getElementById(`module-voice-sel-${mid}`);
+                    if (document.activeElement !== voiceInput) voiceInput.value = mInfo.voice || 'sohee';
+                    
+                    // Card coord inputs
+                    const xInput = document.getElementById(`module-x-${mid}`);
+                    if (document.activeElement !== xInput) xInput.value = mInfo.x.toFixed(1);
+                    
+                    const yInput = document.getElementById(`module-y-${mid}`);
+                    if (document.activeElement !== yInput) yInput.value = mInfo.y.toFixed(1);
+
+                    // Sidebar Map coord inputs
+                    const mapXInput = document.getElementById(`map-x-${mid}`);
+                    if (document.activeElement !== mapXInput) mapXInput.value = mInfo.x.toFixed(1);
+                    
+                    const mapYInput = document.getElementById(`map-y-${mid}`);
+                    if (document.activeElement !== mapYInput) mapYInput.value = mInfo.y.toFixed(1);
+
+                    // Dynamic text readouts for rotation vectors
+                    document.getElementById(`spatial-pos-${mid}`).innerText = `(${mInfo.x.toFixed(1)}, ${mInfo.y.toFixed(1)}) m`;
+                    
+                    if (mInfo.rotation_vector) {
+                        document.getElementById(`spatial-vec-${mid}`).innerText = `(${mInfo.rotation_vector[0].toFixed(4)}, ${mInfo.rotation_vector[1].toFixed(4)})`;
+                    }
+                    document.getElementById(`spatial-ang-${mid}`).innerText = `${mInfo.rotation_angle.toFixed(1)}°`;
+                    document.getElementById(`spatial-dst-${mid}`).innerText = `${mInfo.distance.toFixed(1)} m`;
+
+                    // Badges
+                    const tcpBadge = document.getElementById(`tcp-badge-${mid}`);
+                    if (mInfo.tcp_connected) {
+                        tcpBadge.className = 'badge badge-success';
+                        tcpBadge.innerHTML = '<div class="badge-dot"></div>STREAM ON';
+                    } else {
+                        tcpBadge.className = 'badge badge-muted';
+                        tcpBadge.innerHTML = '<div class="badge-dot"></div>STREAM OFF';
+                    }
+
+                    const agentBadge = document.getElementById(`agent-badge-${mid}`);
+                    if (mInfo.agent_status === 'running') {
+                        agentBadge.className = 'badge badge-success';
+                        agentBadge.innerHTML = '<div class="badge-dot"></div>AGENT RUN';
+                    } else if (mInfo.agent_status === 'stopped') {
+                        agentBadge.className = 'badge badge-warning';
+                        agentBadge.innerHTML = '<div class="badge-dot"></div>AGENT STOP';
+                    } else {
+                        agentBadge.className = 'badge badge-danger';
+                        agentBadge.innerHTML = '<div class="badge-dot"></div>AGENT OFF';
+                    }
+
+                    const vadDesc = document.getElementById(`vad-desc-${mid}`);
+                    if (mInfo.vad_status === '처리중') {
+                        vadDesc.className = 'metric-state-desc';
+                        vadDesc.innerHTML = '<span class="badge badge-info"><div class="badge-dot"></div>음성 처리 중...</span>';
+                    } else if (mInfo.vad_status === '스트리밍') {
+                        vadDesc.className = 'metric-state-desc';
+                        vadDesc.innerHTML = '<span class="badge badge-success"><div class="badge-dot"></div>상시 수음 스트리밍 중</span>';
+                    } else {
+                        vadDesc.className = 'metric-state-desc';
+                        vadDesc.innerHTML = '<span class="badge badge-muted"><div class="badge-dot"></div>대기 중 (무음)</span>';
+                    }
+
+                    // CPU progress
+                    updateCpuRing(mid, mInfo.cpu || 0.0);
+
+                    // Controls disabled states
+                    const playBtn = document.getElementById(`btn-play-${mid}`);
+                    const stopBtn = document.getElementById(`btn-stop-${mid}`);
+                    
+                    if (mInfo.agent_status === 'offline') {
+                        if (mInfo.ip !== '127.0.0.1' && mInfo.ip !== 'localhost') {
+                            playBtn.disabled = true;
+                            stopBtn.disabled = true;
+                        } else {
+                            playBtn.disabled = false;
+                            stopBtn.disabled = true;
+                        }
+                    } else if (mInfo.agent_status === 'running') {
+                        playBtn.disabled = true;
+                        stopBtn.disabled = false;
+                    } else {
+                        playBtn.disabled = false;
+                        stopBtn.disabled = true;
+                    }
+                }
+
+                // 4) Draw Canvas Map
+                drawSpatialMap();
+
+                // 5) Log Terminal
+                if (data.logs && JSON.stringify(data.logs) !== JSON.stringify(lastLogs)) {
+                    lastLogs = data.logs;
+                    const term = document.getElementById('console-terminal-body');
+                    const wasAtBottom = term.scrollHeight - term.clientHeight - term.scrollTop < 40;
+                    
+                    term.innerHTML = '';
+                    
+                    data.logs.forEach(log => {
+                        let tagClass = 'tag-sys';
+                        let tagLabel = 'SYS';
+                        if (log.type === 'stt') { tagClass = 'tag-stt'; tagLabel = 'STT'; }
+                        if (log.type === 'llm') { tagClass = 'tag-llm'; tagLabel = 'LLM'; }
+                        if (log.type === 'tts') { tagClass = 'tag-tts'; tagLabel = 'TTS'; }
+                        
+                        const logLine = document.createElement('div');
+                        logLine.className = 'console-line';
+                        logLine.innerHTML = `
+                            <span class="line-time">${log.time}</span>
+                            <span class="line-module">${log.module_id === 0 ? 'SYSTEM' : `모듈 #${log.module_id}`}</span>
+                            <span class="line-tag ${tagClass}">${tagLabel}</span>
+                            <span class="line-msg">${log.message}</span>
+                        `;
+                        term.appendChild(logLine);
+                    });
+
+                    if (wasAtBottom || term.scrollTop === 0) {
+                        term.scrollTop = term.scrollHeight;
+                    }
+                }
+            } catch (err) {
+                console.error("Poller error:", err);
+            }
+        }
+
+        // Init and start poller
+        pollStatus();
+        setInterval(pollStatus, 1000);
+    </script>
+</body>
+</html>
